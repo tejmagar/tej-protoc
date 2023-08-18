@@ -8,10 +8,10 @@ from src.tej_protoc import protocol
 
 
 class Callback(protocol.Callback):
-    def start(self, client):
+    def start(self):
         builder = protocol.BytesBuilder()
         builder.set_message(b'Hello')
-        client.send(builder.bytes())
+        self.client.send(builder.bytes())
 
     def receive(self, files, message):
         print('---- Received in server ----')

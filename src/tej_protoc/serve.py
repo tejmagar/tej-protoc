@@ -7,6 +7,7 @@ import socket
 import threading
 
 from . import protocol
+from .protocol import FrameReader
 
 
 class Server:
@@ -27,6 +28,7 @@ class Server:
         self.__ngrok_tunnel_created = False
 
         self.kwargs = kwargs
+        self.buffer_size = None
         self.__init_server()
 
     def __init_server(self):
@@ -43,11 +45,13 @@ class Server:
         self.__log_event(f'Client connected: {address}')
 
         callback = callback_class(client)
-        callback.start(client)
+        callback.start()
+
+        frame_reader = FrameReader(self.buffer_size)
 
         while self.__is_running:
             try:
-                protocol.read(client, callback)
+                protocol.read(client, callback, frame_reader)
 
             except Exception as e:
                 self.__log_event(e)
@@ -80,6 +84,8 @@ class Server:
 
     def __stop_ngrok_tunnel(self):
         if self.__ngrok_url:
+            from pyngrok import ngrok
+
             ngrok.disconnect(self.__ngrok_url)
             self.__log_event('Stopping ngrok tunnel...')
 

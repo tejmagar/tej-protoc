@@ -8,8 +8,11 @@ from src.tej_protoc import protocol
 
 
 class ClientCallback(protocol.Callback):
-    def start(self, client):
+    def start(self):
         print('Connected to server...')
+        builder = protocol.BytesBuilder()
+        builder.set_message(b'Hello')
+        self.client.send(builder.bytes())
 
     def receive(self, files, message):
         print('---- Received in client ----')
@@ -18,12 +21,6 @@ class ClientCallback(protocol.Callback):
 
         print('Message: ', message.decode())
         print('---------------------------------')
-
-        builder = protocol.BytesBuilder()
-        builder.add_file('hello.txt', b'randombytes')
-        builder.add_file('hello.txt', b'randombytes')
-        builder.set_message(b'Hello')
-        self.client.send(builder.bytes())
 
 
 try:

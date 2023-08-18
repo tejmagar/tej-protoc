@@ -4,6 +4,7 @@ import threading
 from typing import Type, Optional
 
 from . import protocol
+from .protocol import FrameReader
 
 
 class Client:
@@ -17,6 +18,7 @@ class Client:
         self.__is_daemon = kwargs.get('daemon', False)
         self.__client__: Optional[socket.socket] = None
 
+        self.buffer_size = None
         self.__init_client()
 
     def __init_client(self):
@@ -25,13 +27,15 @@ class Client:
 
     def __listen(self):
         callback = self.__callback_class(self.__client__)
-        callback.start(self.__client__)
+        callback.start()
+
+        frame_reader = FrameReader(self.buffer_size)
 
         while self.__is_running:
             readable, _, _ = select.select([self.__client__], [], [], 0.001)
 
             if self.__client__ in readable:
-                protocol.read(self.__client__, callback)
+                protocol.read(self.__client__, callback, frame_reader)
 
             if not self.__is_running:
                 self.__client__.close()
@@ -50,4 +54,3 @@ class Client:
 
     def disconnect(self):
         self.__is_running = False
-

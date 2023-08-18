@@ -4,6 +4,30 @@ import socket
 from .exceptions import InvalidStatusCode, InvalidProtocolVersion, ConnectionClosed, ProtocolException
 
 
+class SocReader:
+    def __init__(self, buffer_size: Optional[int]):
+        self.buffer_size = buffer_size
+
+        if not buffer_size:
+            self.buffer_size = 100000000
+
+    def read_bytes(self, client: socket.socket, size: int) -> bytes:
+        data = b''
+        bytes_in = 0
+
+        while bytes_in != size:
+            remaining_size = size - bytes_in
+            max_read = min(remaining_size, self.buffer_size)
+            chunk = client.recv(max_read)
+            if not chunk:
+                raise ConnectionClosed()
+
+            data += chunk
+            bytes_in += len(chunk)
+
+        return data
+
+
 class File:
     def __init__(self, name: str, data: bytes, size: int):
         self.name = name
@@ -19,7 +43,7 @@ class Callback:
         self.__files: List[File] = []
         self.__message: Optional[bytes] = None
 
-    def start(self, client):
+    def start(self):
         pass
 
     def receive_file_data(self, filename: str, data: bytes, size: int):
@@ -41,81 +65,64 @@ class Callback:
         self.__message: Optional[bytes] = None
 
 
-def read_bytes(client: socket.socket, size: int) -> bytes:
-    buffer_size = 1024
-    data = b''
-    bytes_in = 0
+class FrameReader:
+    def __init__(self, buffer_size=Optional[int]):
+        self.soc_reader = SocReader(buffer_size)
 
-    while bytes_in != size:
-        remaining_size = size - bytes_in
-        max_read = min(remaining_size, buffer_size)
-        chunk = client.recv(max_read)
-        if not chunk:
-            raise ConnectionClosed()
+    def read_status(self, client: socket.socket) -> Tuple[int, int]:
+        """
+        Reads first byte from the dataframe
+        """
 
-        data += chunk
-        bytes_in += len(chunk)
+        first_byte = self.soc_reader.read_bytes(client, 1)
+        status = ord(first_byte) >> 7
+        custom_status = ord(first_byte) & 0b01111111
+        return status, custom_status
 
-    return data
+    def read_protocol_version(self, client: socket.socket) -> int:
+        return ord(self.soc_reader.read_bytes(client, 1))
 
+    def count_number_of_files(self, client: socket.socket) -> int:
+        return int.from_bytes(self.soc_reader.read_bytes(client, 8), byteorder='big')
 
-def read_status(client: socket.socket) -> Tuple[int, int]:
-    """
-    Reads first byte from the dataframe
-    """
+    def read_file(self, client: socket.socket) -> Tuple[str, bytes, int]:
+        filename_length = int.from_bytes(self.soc_reader.read_bytes(client, 2), byteorder='big')
+        filename = self.soc_reader.read_bytes(client, filename_length).decode()
+        file_length = int.from_bytes(self.soc_reader.read_bytes(client, 8), byteorder='big')
+        file_data = self.soc_reader.read_bytes(client, file_length)
+        return filename, file_data, file_length
 
-    first_byte = read_bytes(client, 1)
-    status = ord(first_byte) >> 7
-    custom_status = ord(first_byte) & 0b01111111
-    return status, custom_status
+    def read_message(self, client: socket.socket) -> Optional[bytes]:
+        message_length = int.from_bytes(self.soc_reader.read_bytes(client, 8), byteorder='big')
 
+        if message_length == 0:
+            return None
 
-def read_protocol_version(client: socket.socket) -> int:
-    return ord(read_bytes(client, 1))
-
-
-def count_number_of_files(client: socket.socket) -> int:
-    return int.from_bytes(read_bytes(client, 8), byteorder='big')
-
-
-def read_file(client: socket.socket) -> Tuple[str, bytes, int]:
-    filename_length = int.from_bytes(read_bytes(client, 2), byteorder='big')
-    filename = read_bytes(client, filename_length).decode()
-    file_length = int.from_bytes(read_bytes(client, 8), byteorder='big')
-    file_data = read_bytes(client, file_length)
-    return filename, file_data, file_length
+        return self.soc_reader.read_bytes(client, message_length)
 
 
-def read_message(client: socket.socket) -> Optional[bytes]:
-    message_length = int.from_bytes(read_bytes(client, 8), byteorder='big')
-
-    if message_length == 0:
-        return None
-
-    return read_bytes(client, message_length)
-
-
-def read(client: socket.socket, callback: Callback):
-    status, custom_status = read_status(client)
+def read(client: socket.socket, callback: Callback, frame_reader):
+    status, custom_status = frame_reader.read_status(client)
     if status != 1:
         print('Invalid starting bit. Received: ', bin(status)[2:])
         raise ProtocolException()  # First bit must be 1 to be valid
 
     callback.clean()
     callback.status = custom_status
-    callback.protocol_version = read_protocol_version(client)
+    callback.protocol_version = frame_reader.read_protocol_version(client)
 
-    files_count = count_number_of_files(client)
+    files_count = frame_reader.count_number_of_files(client)
 
     for e in range(files_count):
-        filename, file_data, file_size = read_file(client)
+        filename, file_data, file_size = frame_reader.read_file(client)
         callback.receive_file_data(filename, file_data, file_size)
 
-    message = read_message(client)
+    message = frame_reader.read_message(client)
     if message:
         callback.message(message)
 
     callback.complete()
+    del frame_reader
 
 
 class BytesBuilder:
