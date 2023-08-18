@@ -6,8 +6,6 @@ import subprocess
 import socket
 import threading
 
-import ngrok
-
 from . import protocol
 
 
