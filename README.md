@@ -15,7 +15,7 @@ This protocol can be used for sending large files and messages faster.
 |    (1 bit)    |  (7 bits)      |                                  |
 +-------------------------------------------------------------------+
 |                         Number of files                           |
-|                           (64 bits)                              |
+|                           (64 bits)                               |
 +-------------------------------------------------------------------+
 |        'n' File length        |           'n' file data           |
 |         (16 bits)             |        (from 'n' file length)     |
