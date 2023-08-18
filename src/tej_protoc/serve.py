@@ -37,7 +37,7 @@ class Server:
         if not self.__server:
             self.__server = socket.create_server((self.__host, self.__port), reuse_port=True)
 
-    def __log_event(self, log: str):
+    def __log_event(self, log: Any):
         if self.__log:
             print(log)
 
@@ -52,8 +52,7 @@ class Server:
                 protocol.read(client, callback)
 
             except Exception as e:
-                if self.__log:
-                    print(e)
+                self.__log_event(e)
                 break
 
         client.close()
