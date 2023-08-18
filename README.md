@@ -19,7 +19,7 @@ This protocol can be used for sending large files and messages faster.
 +-------------------------------------------------------------------+
 |        'n' File length        |           'n' file data           |
 |         (16 bits)             |        (from 'n' file length)     |
-+-------------------------------+-----------------------------------|
++-------------------------------+-----------------------------------+
 |                    Repeat for number of files                     |
 +-------------------------------------------------------------------+
 |         Message length       |            Message data            |
