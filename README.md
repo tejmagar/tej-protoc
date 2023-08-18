@@ -17,13 +17,13 @@ This protocol can be used for sending large files and messages faster.
 |                         Number of files                           |
 |                           (64 bits)                               |
 +-------------------------------------------------------------------+
-|        'n' File length        |           'n' file data           |
-|         (16 bits)             |        (from 'n' file length)     |
+|        'n' File length         |           'n' file data          |
+|         (16 bits)              |        (from 'n' file length)    |
 +-------------------------------+-----------------------------------+
 |                    Repeat for number of files                     |
 +-------------------------------------------------------------------+
-|         Message length       |            Message data            |
-|           (64 bits)          |        (from message length)       |
+|         Message length         |           Message data           |
+|           (64 bits)            |       (from message length)      |
 +-------------------------------------------------------------------+
 ```
 
