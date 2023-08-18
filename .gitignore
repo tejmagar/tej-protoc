@@ -1,0 +1,6 @@
+build/
+dist/
+tej_protoc.egg-info/
+__pycache__/
+venv/
+.idea/
