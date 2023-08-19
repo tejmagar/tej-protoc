@@ -23,5 +23,3 @@ class Callback(protocol.Callback):
 
 server = Server('localhost', 8000, Callback, log=True)
 server.serve()
-
-

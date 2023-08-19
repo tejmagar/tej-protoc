@@ -28,7 +28,7 @@ class Server:
         self.__ngrok_tunnel_created = False
 
         self.kwargs = kwargs
-        self.buffer_size = None
+        self.max_buffer_size = None
         self.__init_server()
 
     def __init_server(self):
@@ -36,6 +36,7 @@ class Server:
 
         if not self.__server:
             self.__server = socket.create_server((self.__host, self.__port), reuse_port=True)
+            self.__server.setblocking(0)
 
     def __log_event(self, log: Any):
         if self.__log:
@@ -47,9 +48,10 @@ class Server:
         callback = callback_class(client)
         callback.start()
 
-        frame_reader = FrameReader(self.buffer_size)
+        frame_reader = FrameReader(self.max_buffer_size)
 
         while self.__is_running:
+
             try:
                 protocol.read(client, callback, frame_reader)
 
@@ -100,7 +102,7 @@ class Server:
 
     def __serve(self):
         while self.__is_running:
-            readable, _, _ = select.select([self.__server], [], [], 0.001)
+            readable, _, _ = select.select([self.__server], [], [], 0.0000001)
 
             if self.__server in readable:
                 client, address = self.__server.accept()

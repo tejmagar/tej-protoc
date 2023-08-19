@@ -5,27 +5,33 @@ from .exceptions import InvalidStatusCode, InvalidProtocolVersion, ConnectionClo
 
 
 class SocReader:
-    def __init__(self, buffer_size: Optional[int]):
-        self.buffer_size = buffer_size
+    def __init__(self, max_buffer_size: Optional[int]):
+        self.max_buffer_size = max_buffer_size
 
-        if not buffer_size:
-            self.buffer_size = 100000000
+        if not max_buffer_size:
+            self.max_buffer_size = 8 * 1024
 
     def read_bytes(self, client: socket.socket, size: int) -> bytes:
-        data = b''
+        data = bytearray(size)
+        # Create a memory view on the data bytearray
+        memory_view = memoryview(data)
+
         bytes_in = 0
+        buffer_size = min(size, self.max_buffer_size)
 
         while bytes_in != size:
             remaining_size = size - bytes_in
-            max_read = min(remaining_size, self.buffer_size)
+            max_read = min(remaining_size, buffer_size)
             chunk = client.recv(max_read)
             if not chunk:
                 raise ConnectionClosed()
 
-            data += chunk
+            # Assign the chunk to the appropriate slice in the memory view
+            memory_view[bytes_in:bytes_in + len(chunk)] = chunk
+
             bytes_in += len(chunk)
 
-        return data
+        return bytes(data)
 
 
 class File:
@@ -33,6 +39,11 @@ class File:
         self.name = name
         self.data = data
         self.size = size
+
+
+class SendCallback:
+    def progress(self, sent_bytes, total_bytes):
+        pass
 
 
 class Callback:
@@ -45,6 +56,19 @@ class Callback:
 
     def start(self):
         pass
+
+    def send(self, data, callback=None, buffer_size=4096):
+        size = len(data)
+        memory_view = memoryview(data)
+        start = 0
+
+        while start != size:
+            to_send = min(size - start, buffer_size)
+            sent_bytes = self.client.send(memory_view[start: start + to_send])
+            start = start + sent_bytes
+
+            if callback:
+                callback.progress(sent_bytes, size)
 
     def receive_file_data(self, filename: str, data: bytes, size: int):
         self.__files.append(File(filename, data, size))
@@ -116,6 +140,7 @@ def read(client: socket.socket, callback: Callback, frame_reader):
     for e in range(files_count):
         filename, file_data, file_size = frame_reader.read_file(client)
         callback.receive_file_data(filename, file_data, file_size)
+        del file_data
 
     message = frame_reader.read_message(client)
     if message:

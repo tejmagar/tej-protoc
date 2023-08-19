@@ -32,7 +32,7 @@ class Client:
         frame_reader = FrameReader(self.buffer_size)
 
         while self.__is_running:
-            readable, _, _ = select.select([self.__client__], [], [], 0.001)
+            readable, _, _ = select.select([self.__client__], [], [], 0.00000001)
 
             if self.__client__ in readable:
                 protocol.read(self.__client__, callback, frame_reader)
