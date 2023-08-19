@@ -44,10 +44,10 @@ from tej_protoc.serve import Server
 from tej_protoc import protocol
 
 class Callback(protocol.Callback):
-    def start(self, client):
+    def start(self):
         builder = protocol.BytesBuilder()
         builder.set_message(b'Hello')
-        client.send(builder.bytes())
+        self.client.send(builder.bytes())
 
     def receive(self, files, message):
         print('---- Received in server ----')
@@ -88,7 +88,7 @@ class ClientCallback(protocol.Callback):
         builder.set_message(b'Sending from client')
         # To upload file
         # builder.add_file('file.txt', open('file.txt', 'rb').read())
-        client.send(builder.bytes())
+        self.client.send(builder.bytes())
         
     def receive(self, files, message):
         for file in files:
