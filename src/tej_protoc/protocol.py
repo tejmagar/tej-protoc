@@ -35,10 +35,13 @@ class SocReader:
 
 
 class File:
-    def __init__(self, name: str, data: bytes, size: int):
+    def __init__(self, name: str, data: bytes, size: Optional[int] = None):
         self.name = name
         self.data = data
         self.size = size
+
+        if not self.size:
+            self.size = len(self.data)
 
 
 class SendCallback:
@@ -58,17 +61,21 @@ class Callback:
         pass
 
     def send(self, data, callback=None, buffer_size=4096):
-        size = len(data)
-        memory_view = memoryview(data)
-        start = 0
+        try:
+            size = len(data)
+            memory_view = memoryview(data)
+            start = 0
 
-        while start != size:
-            to_send = min(size - start, buffer_size)
-            sent_bytes = self.client.send(memory_view[start: start + to_send])
-            start = start + sent_bytes
+            while start != size:
+                to_send = min(size - start, buffer_size)
+                sent_bytes = self.client.send(memory_view[start: start + to_send])
+                start = start + sent_bytes
 
-            if callback:
-                callback.progress(sent_bytes, size)
+                if callback:
+                    callback.progress(sent_bytes, size)
+
+        except socket.error as e:
+            raise ConnectionClosed(e)
 
     def receive_file_data(self, filename: str, data: bytes, size: int):
         self.__files.append(File(filename, data, size))
@@ -80,6 +87,9 @@ class Callback:
         self.receive(self.__files, self.__message)
 
     def receive(self, files, message):
+        pass
+
+    def close(self):
         pass
 
     def clean(self):

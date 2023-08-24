@@ -5,6 +5,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from src.tej_protoc.serve import Server
 from src.tej_protoc import protocol
+from src.tej_protoc.logger import Log
+
+Log.enabled = True
 
 
 class Callback(protocol.Callback):
@@ -22,4 +25,4 @@ class Callback(protocol.Callback):
 
 
 server = Server('localhost', 8000, Callback, log=True)
-server.serve()
+server.start()

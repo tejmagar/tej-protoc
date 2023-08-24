@@ -3,6 +3,11 @@
 `tej-protoc` v1 is a implementation of custom TEJ protocol. It is a full duplex protocol.
 This protocol can be used for sending large files and messages faster.
 
+## Installation
+```
+pip install tej-protoc
+```
+
 ## Diagram
 
 ```
@@ -83,7 +88,7 @@ from tej_protoc import protocol
 
 
 class ClientCallback(protocol.Callback):
-    def start(self, client):
+    def start(self):
         builder = protocol.BytesBuilder()
         builder.set_message(b'Sending from client')
         # To upload file

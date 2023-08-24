@@ -7,6 +7,7 @@ import socket
 import threading
 
 from . import protocol
+from .logger import Log
 from .protocol import FrameReader
 
 
@@ -38,9 +39,9 @@ class Server:
             self.__server = socket.create_server((self.__host, self.__port), reuse_port=True)
             self.__server.setblocking(0)
 
-    def __log_event(self, log: Any):
+    def __log_event(self, message: Any):
         if self.__log:
-            print(log)
+            Log.info(tag='Server', message=message)
 
     def __handle_client(self, client: socket.socket, address: Tuple[Any], callback_class: Type[protocol.Callback]):
         self.__log_event(f'Client connected: {address}')
@@ -60,6 +61,7 @@ class Server:
                 break
 
         client.close()
+        callback.close()
         del callback
         self.__log_event('Connection closed')
 
@@ -114,7 +116,7 @@ class Server:
             if not self.__is_running:
                 break
 
-    def serve(self, run_background: bool = False, is_daemon: bool = False):
+    def start(self, run_background: bool = False, is_daemon: bool = False):
         self.__run_background = run_background
         self.__is_daemon = is_daemon
         self.__log_event(f'Server is running at {self.__host}:{self.__port}')
@@ -140,7 +142,7 @@ class Server:
         if self.__ngrok_tunnel_created:
             self.tunnel_ngrok(self.__ngrok_auth_token)
 
-        return self.serve(self.__run_background, self.__is_daemon)
+        return self.start(self.__run_background, self.__is_daemon)
 
     def __repr__(self):
         return self.__class__.__name__

@@ -32,14 +32,19 @@ class Client:
         frame_reader = FrameReader(self.buffer_size)
 
         while self.__is_running:
-            readable, _, _ = select.select([self.__client__], [], [], 0.00000001)
+            try:
+                readable, _, _ = select.select([self.__client__], [], [], 0.00000001)
 
-            if self.__client__ in readable:
-                protocol.read(self.__client__, callback, frame_reader)
+                if self.__client__ in readable:
+                    protocol.read(self.__client__, callback, frame_reader)
 
-            if not self.__is_running:
-                self.__client__.close()
+                if not self.__is_running:
+                    break
+            except Exception as e:
+                print(e)
                 break
+
+            self.__client__.close()
 
     def listen(self, run_background: bool = False, is_daemon: bool = False):
         self.__run_background = run_background
