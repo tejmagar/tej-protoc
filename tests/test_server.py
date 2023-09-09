@@ -12,11 +12,13 @@ Log.enabled = True
 
 class Callback(protocol.Callback):
     def start(self):
-        builder = protocol.BytesBuilder()
+        builder = protocol.BytesBuilder(11)
         builder.set_message(b'Hello')
         self.client.send(builder.bytes())
 
     def receive(self, files, message):
+        print('Status code', self.status)
+
         print('---- Received in server ----')
         for file in files:
             print(file.name)

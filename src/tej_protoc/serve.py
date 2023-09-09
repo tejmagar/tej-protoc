@@ -1,4 +1,3 @@
-import select
 from typing import Tuple, Any, Type
 
 import importlib
@@ -18,7 +17,6 @@ class Server:
         self.__port = port
 
         self.__log = kwargs.get('log', False)
-        self.__is_running = True
         self.__callback_class = callback_class
 
         self.__run_background = False
@@ -37,7 +35,7 @@ class Server:
 
         if not self.__server:
             self.__server = socket.create_server((self.__host, self.__port), reuse_port=True)
-            self.__server.setblocking(0)
+            self.__server.listen()
 
     def __log_event(self, message: Any):
         if self.__log:
@@ -51,8 +49,7 @@ class Server:
 
         frame_reader = FrameReader(self.max_buffer_size)
 
-        while self.__is_running:
-
+        while True:
             try:
                 protocol.read(client, callback, frame_reader)
 
@@ -103,18 +100,12 @@ class Server:
         return self.__ngrok_url
 
     def __serve(self):
-        while self.__is_running:
-            readable, _, _ = select.select([self.__server], [], [], 0.0000001)
+        while True:
+            client, address = self.__server.accept()
 
-            if self.__server in readable:
-                client, address = self.__server.accept()
-
-                # Create new thread for each client
-                thread = threading.Thread(target=self.__handle_client, args=(client, address, self.__callback_class))
-                thread.start()
-
-            if not self.__is_running:
-                break
+            # Create new thread for each client
+            thread = threading.Thread(target=self.__handle_client, args=(client, address, self.__callback_class))
+            thread.start()
 
     def start(self, run_background: bool = False, is_daemon: bool = False):
         self.__run_background = run_background
@@ -128,21 +119,6 @@ class Server:
         else:
             self.__serve()
 
-    def is_running(self):
-        return self.__is_running
 
-    def shutdown(self):
-        self.__is_running = False
-        self.__stop_ngrok_tunnel()
-
-    def restart(self):
-        self.__init_server()
-        self.__is_running = True
-
-        if self.__ngrok_tunnel_created:
-            self.tunnel_ngrok(self.__ngrok_auth_token)
-
-        return self.start(self.__run_background, self.__is_daemon)
-
-    def __repr__(self):
-        return self.__class__.__name__
+def __repr__(self):
+    return self.__class__.__name__

@@ -17,7 +17,7 @@ class CustomCallback(protocol.SendCallback):
 
 
 builder = protocol.BytesBuilder()
-builder.add_file('a.txt', b'a' * int(1000 * 1024 * 1024))
+builder.add_file('a.txt', b'a' * int(1 * 1024 * 1024))
 builder.set_message(b'Hello')
 data = builder.bytes()
 
@@ -36,6 +36,8 @@ class ClientCallback(protocol.Callback):
             print('\n')
 
     def receive(self, files, message):
+        print('Status code', self.status)
+
         print('---- Received in client ----')
         for file in files:
             print(file.name)
@@ -45,7 +47,7 @@ class ClientCallback(protocol.Callback):
 
 
 try:
-    client = Client('localhost', 8000, ClientCallback)
-    client.listen(True)
+    client = Client('localhost', 8000, ClientCallback, log=True)
+    client.listen()
 except Exception as e:
     print('error', e)

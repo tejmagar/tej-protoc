@@ -166,6 +166,8 @@ class BytesBuilder:
     """
 
     def __init__(self, status_code: Optional[int] = None):
+        self._status_code = 0
+
         if status_code:
             in_range = (status_code >= 0 or status_code <= 0b01111111)
             if not in_range:
@@ -175,7 +177,6 @@ class BytesBuilder:
 
         self._bytearray = bytearray()
         self._protocol_version: int = 1
-        self._status_code: int = 0
         self._files: List[File] = []
         self._message: Optional[bytes] = None
 
