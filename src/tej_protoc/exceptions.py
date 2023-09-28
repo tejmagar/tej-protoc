@@ -1,16 +1,16 @@
-class InvalidStatusCode(Exception):
-    pass
-
-
-class InvalidProtocolVersion(Exception):
-    pass
-
-
 class ConnectionClosed(Exception):
     pass
 
 
-class ProtocolException(Exception):
+class ProtocolException(ConnectionClosed):
+    pass
+
+
+class InvalidStatusCode(ProtocolException):
+    pass
+
+
+class InvalidProtocolVersion(ProtocolException):
     pass
 
 

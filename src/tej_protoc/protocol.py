@@ -1,7 +1,9 @@
 from typing import Tuple, Optional, List
 import socket
 
+from .callbacks import ResponseCallback
 from .exceptions import InvalidStatusCode, InvalidProtocolVersion, ConnectionClosed, ProtocolException
+from .file import File
 
 
 class SocReader:
@@ -34,73 +36,8 @@ class SocReader:
         return bytes(data)
 
 
-class File:
-    def __init__(self, name: str, data: bytes, size: Optional[int] = None):
-        self.name = name
-        self.data = data
-        self.size = size
-
-        if not self.size:
-            self.size = len(self.data)
-
-
-class SendCallback:
-    def progress(self, sent_bytes, total_bytes):
-        pass
-
-
-class Callback:
-    def __init__(self, client):
-        self.client: socket.socket = client
-        self.protocol_version: int = 1
-        self.status: int = 0
-        self.__files: List[File] = []
-        self.__message: Optional[bytes] = None
-
-    def start(self):
-        pass
-
-    def send(self, data, callback=None, buffer_size=4096):
-        try:
-            size = len(data)
-            memory_view = memoryview(data)
-            start = 0
-
-            while start != size:
-                to_send = min(size - start, buffer_size)
-                sent_bytes = self.client.send(memory_view[start: start + to_send])
-                start = start + sent_bytes
-
-                if callback:
-                    callback.progress(sent_bytes, size)
-
-        except socket.error as e:
-            raise ConnectionClosed(e)
-
-    def receive_file_data(self, filename: str, data: bytes, size: int):
-        self.__files.append(File(filename, data, size))
-
-    def message(self, data: bytes):
-        self.__message = data
-
-    def complete(self):
-        self.receive(self.__files, self.__message)
-
-    def receive(self, files, message):
-        pass
-
-    def close(self):
-        pass
-
-    def clean(self):
-        self.protocol_version: int = 1
-        self.status: int = 0
-        self.__files: List[File] = []
-        self.__message: Optional[bytes] = None
-
-
 class FrameReader:
-    def __init__(self, buffer_size=Optional[int]):
+    def __init__(self, buffer_size: Optional[int] = None):
         self.soc_reader = SocReader(buffer_size)
 
     def read_status(self, client: socket.socket) -> Tuple[int, int]:
@@ -135,28 +72,25 @@ class FrameReader:
         return self.soc_reader.read_bytes(client, message_length)
 
 
-def read(client: socket.socket, callback: Callback, frame_reader):
+def read(client: socket.socket, callback: ResponseCallback, frame_reader: FrameReader):
     status, custom_status = frame_reader.read_status(client)
     if status != 1:
         print('Invalid starting bit. Received: ', bin(status)[2:])
         raise ProtocolException()  # First bit must be 1 to be valid
 
-    callback.clean()
     callback.status = custom_status
     callback.protocol_version = frame_reader.read_protocol_version(client)
 
     files_count = frame_reader.count_number_of_files(client)
 
+    files: List[File] = []
+
     for e in range(files_count):
         filename, file_data, file_size = frame_reader.read_file(client)
-        callback.receive_file_data(filename, file_data, file_size)
-        del file_data
+        files.append(File(filename, file_data, file_size))
 
     message = frame_reader.read_message(client)
-    if message:
-        callback.message(message)
-
-    callback.complete()
+    callback.received(files, message)
     del frame_reader
 
 
@@ -219,7 +153,8 @@ class BytesBuilder:
             self._bytearray += bytes(file.name, 'utf-8')
 
             # file size
-            file_length = file.size.to_bytes(8, byteorder='big')
+            file_size = len(file.data)
+            file_length = file_size.to_bytes(8, byteorder='big')
             self._bytearray += file_length
 
             # file n bits from file size

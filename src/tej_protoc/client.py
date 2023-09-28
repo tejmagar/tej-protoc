@@ -3,54 +3,55 @@ import threading
 from typing import Type, Optional
 
 from . import protocol
+from .callbacks import ResponseCallback
+from .exceptions import ConnectionClosed
 from .logger import Log
 from .protocol import FrameReader
 
 
 class Client:
-    def __init__(self, host: str, port: int, callback_class: Type[protocol.Callback], **kwargs):
-        self.__host = host
-        self.__port = port
-        self.__callback_class = callback_class
+    def __init__(self, host: str, port: int, callback_class: Type[ResponseCallback]):
+        self.__client__: Optional[socket.socket] = socket.create_connection((host, port))
+        self.__callback_class__: Type[ResponseCallback] = callback_class
+        self.frame_reader: FrameReader = FrameReader()
 
-        self.__run_background = kwargs.get('run_background', False)
-        self.__is_daemon = kwargs.get('daemon', False)
-        self.__client__: Optional[socket.socket] = None
+    def __listen__(self):
+        """Reads incoming client messages and files. """
 
-        self.buffer_size = None
-        self.__init_client()
-
-    def __init_client(self):
-        self.__client__ = socket.socket()
-        self.__client__.connect((self.__host, self.__port))
-
-    def __listen(self):
-        callback = self.__callback_class(self.__client__)
-        callback.start()
-
-        frame_reader = FrameReader(self.buffer_size)
+        callback = self.__callback_class__()
+        callback.client = self.__client__
+        callback.connected(self.__client__)
 
         while True:
             try:
-                protocol.read(self.__client__, callback, frame_reader)
+                protocol.read(self.__client__, callback, self.frame_reader)
+            except ConnectionClosed as e:
+                if type(e) == ConnectionClosed:
+                    Log.debug('TPServer', f'Connection closed')
 
-            except Exception as e:
-                Log.info('Client', e)
-                Log.info('Client', 'Closing connection')
-                break
+                else:
+                    Log.error('TPServer', e)
 
-        self.__client__.close()
-        callback.close()
+                break  # Stop listening incoming files and messages
 
-    def listen(self, run_background: bool = False, is_daemon: bool = False):
-        self.__run_background = run_background
-        self.__is_daemon = is_daemon
+        self.__client__ = None
+        callback.disconnected()
+
+    def listen(self, **kwargs):
+        """Pass run_background=True to run in background and is_daemon=True to set background thread as
+        daemon thread.
+        """
+
+        run_background = kwargs.get('run_background', False)
+        is_daemon = kwargs.get('is_daemon', False)
 
         if run_background:
-            thread = threading.Thread(target=self.__listen)
+            thread = threading.Thread(target=self.__listen__)
             thread.daemon = is_daemon
             thread.start()
-        else:
-            self.__listen()
 
+        else:
+            self.__listen__()
+
+    def get_client(self):
         return self.__client__
