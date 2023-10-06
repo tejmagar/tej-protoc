@@ -27,10 +27,10 @@ class TPClient:
                 protocol.read(self.__client__, callback, self.frame_reader)
             except ConnectionClosed as e:
                 if type(e) == ConnectionClosed:
-                    Log.debug('TPServer', f'Connection closed')
+                    Log.debug('TPClient', f'Connection closed')
 
                 else:
-                    Log.error('TPServer', e)
+                    Log.error('TPClient', e)
 
                 break  # Stop listening incoming files and messages
 
