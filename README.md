@@ -4,7 +4,7 @@
 This protocol can be used for sending large files and messages faster.
 
 ## Installation
-```
+```shell
 pip install tej-protoc
 ```
 
@@ -47,17 +47,18 @@ Custom status bit ranges from `0 to 127`
 Here is a simple server implementation with tej-protoc.
 Create a new file named `server.py`
 
-```
-from tej_protoc.serve import Server
+```python
+from tej_protoc.server import TPServer
 from tej_protoc import protocol
 
-class Callback(protocol.Callback):
-    def start(self):
+
+class MessageCallback(protocol.ResponseCallback):
+    def connected(self, client):
         builder = protocol.BytesBuilder()
         builder.set_message(b'Hello')
-        self.client.send(builder.bytes())
+        client.send(builder.bytes())
 
-    def receive(self, files, message):
+    def received(self, files, message):
         print('---- Received in server ----')
         for file in files:
             print(file.name)
@@ -65,50 +66,50 @@ class Callback(protocol.Callback):
         print('---------------------------------')
 
 
-server = Server('localhost', 8000, Callback, log=True)
-server.serve()
+server = TPServer('localhost', 8000, MessageCallback)
+server.listen()
 
 ```
 
 You can also access the `client` object inside callback methods with `self.client`.
 Your code inside the Callback class is executed everytime when the client connects and
-the data is received. Once the client is connected `start()` method is called. If you want to send data when client
-connects, then you can send with `client.send(builder.build())`.
+the data is received. Once the client is connected `connected` method is called. If you want to send data when client
+connects, then you can send with `protocol.send(client, builder.build())`.
 
 To send data from client, you need to build compatible bytes array with `BytesBuilder` class.
 
-To expose the server with ngrok:
-
-```
-server.tunnel_ngrok('<auth_token>')
-```
 
 ### Client
 
-```
-from tej_protoc.client import Client
+```python
+
+from tej_protoc.client import TPClient
 from tej_protoc import protocol
 
 
-class ClientCallback(protocol.Callback):
-    def start(self):
+class ClientCallback(protocol.ResponseCallback):
+    def connected(self, client):
         builder = protocol.BytesBuilder()
         builder.set_message(b'Sending from client')
         # To upload file
         # builder.add_file('file.txt', open('file.txt', 'rb').read())
-        self.client.send(builder.bytes())
-        
+        client.send(builder.bytes())
+
     def receive(self, files, message):
         for file in files:
             print(f'Filename: {file.name}')
             # Other attributes: file.size, file.data
-        
-        print(f'Message: {message.decode()}')
-        
 
-try:
-    client = Client('localhost', 8000, ClientCallback)
-    client.listen(True)
-except Exception as e:
-    print('error', e)
+        print(f'Message: {message.decode()}')
+
+
+def test_client():
+    try:
+        client = TPClient('localhost', 8000, ClientCallback)
+        client.listen()
+    except Exception as e:
+        print('error', e)
+
+
+test_client()
 ```
