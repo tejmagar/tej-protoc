@@ -86,7 +86,7 @@ class FrameReader:
         filename_length = int.from_bytes(self.soc_reader.read_bytes(client, 2), byteorder='big')
         filename = self.soc_reader.read_bytes(client, filename_length).decode()
 
-        # Extract filedata
+        # Extract file data
         file_length = int.from_bytes(self.soc_reader.read_bytes(client, 8), byteorder='big')
         file_data = self.soc_reader.read_bytes(client, file_length)
         return filename, file_data, file_length
@@ -194,7 +194,7 @@ class BytesBuilder:
     def __add_files__(self, dataframe: bytearray) -> None:
         """
         Adds file count number to the dataframe along with the file information. The file information
-        includes filename and filedata.
+        includes filename and file data.
 
         Here's the sequence:
         # Add files count information (64 bits)
@@ -222,7 +222,7 @@ class BytesBuilder:
             file_length = file_size.to_bytes(8, byteorder='big')
             dataframe += file_length
 
-            # Finally append filedata to the dataframe
+            # Finally append file data to the dataframe
             dataframe += file.data
 
     def __add_message__(self, dataframe: bytearray) -> None:
