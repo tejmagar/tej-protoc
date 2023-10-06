@@ -34,6 +34,7 @@ class TPServer:
                     Log.error('TPServer', e)
                 break
 
+        client.close()
         callback.disconnected()
 
     def __serve__(self) -> None:
