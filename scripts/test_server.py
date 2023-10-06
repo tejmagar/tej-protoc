@@ -15,6 +15,7 @@ from src.tej_protoc.server import TPServer
 class MessageCallback(ResponseCallback):
     def connected(self, client: socket.socket):
         print('Client connected')
+        protocol.send(client, protocol.BytesBuilder().set_message('Hello'.encode()).bytes())
 
     def received(self, files: List[File], message_data: bytes):
         print('Message:', message_data.decode())

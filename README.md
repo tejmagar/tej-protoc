@@ -22,10 +22,13 @@ pip install tej-protoc
 |                         Number of files                           |
 |                           (64 bits)                               |
 +-------------------------------------------------------------------+
-|        'n' File length         |           'n' file data          |
-|         (16 bits)              |        (from 'n' file length)    |
-+-------------------------------+-----------------------------------+
-|                    Repeat for number of files                     |
+|        'n' File name length    |        'n' Actual file name      |
+|         (16 bits)              |     (from 'n' filename length)   |
++-------------------------------------------------------------------+
+|        'n' file length         |      'n' Actual file data        |
+|        (64 bits)               |      (from 'n' file length)      |
++-------------------------------------------------------------------+
+|                  Repeat for 'n' number of files                   |
 +-------------------------------------------------------------------+
 |         Message length         |           Message data           |
 |           (64 bits)            |       (from message length)      |

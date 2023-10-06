@@ -11,9 +11,6 @@ from src.tej_protoc import protocol
 class ClientCallback(protocol.ResponseCallback):
     def connected(self, client: socket.socket):
         print('Connected to server...')
-        print('Sending hello')
-        data = protocol.BytesBuilder().set_message(b'hello').bytes()
-        client.send(data)
 
     def received(self, files, message):
         print('---- Received in client ----')

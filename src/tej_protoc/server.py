@@ -43,8 +43,9 @@ class TPServer:
         while True:
             client, address = self.__server__.accept()
 
-            # Handle each individual clients
-            self.__handle_events__(client, address)
+            # Handle each individual clients in separate thread
+            thread = threading.Thread(target=self.__handle_events__, args=(client, address))
+            thread.start()
 
     def listen(self, **kwargs: Any) -> None:
         """ Starting listening incoming connections. """

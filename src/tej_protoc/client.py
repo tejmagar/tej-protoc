@@ -38,8 +38,8 @@ class Client:
         callback.disconnected()
 
     def listen(self, **kwargs):
-        """Pass run_background=True to run in background and is_daemon=True to set background thread as
-        daemon thread.
+        """
+        Pass run_background=True to run in background and is_daemon=True to set background thread as daemon thread.
         """
 
         run_background = kwargs.get('run_background', False)
