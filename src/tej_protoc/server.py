@@ -17,7 +17,7 @@ class TPServer:
         self.frame_reader: FrameReader = FrameReader()
 
     def __handle_events__(self, client: socket.socket, address: tuple[str, int]) -> None:
-        """Handles individual client event. """
+        """ Handles individual client event. """
 
         callback = self.__callback_class__()
         callback.client = client
