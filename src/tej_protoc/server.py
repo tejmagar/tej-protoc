@@ -38,7 +38,7 @@ class TPServer:
         callback.disconnected()
 
     def __serve__(self) -> None:
-        """ Accepts and serves clients """
+        """ Accepts and serves clients. """
 
         while True:
             client, address = self.__server__.accept()
