@@ -48,7 +48,7 @@ class TPServer:
             thread.start()
 
     def listen(self, **kwargs: Any) -> None:
-        """ Starting listening incoming connections. """
+        """ Start listening incoming connections. """
 
         run_background = kwargs.get('run_background', False)
         is_daemon = kwargs.get('is_daemon', False)
