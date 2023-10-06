@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.tej_protoc.client import Client
+from src.tej_protoc.client import TPClient
 from src.tej_protoc import protocol
 
 
@@ -23,7 +23,7 @@ class ClientCallback(protocol.ResponseCallback):
 
 def test_client():
     try:
-        client = Client('localhost', 8000, ClientCallback)
+        client = TPClient('localhost', 8000, ClientCallback)
         client.listen()
     except Exception as e:
         print('error', e)

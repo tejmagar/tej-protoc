@@ -9,14 +9,14 @@ from .logger import Log
 from .protocol import FrameReader
 
 
-class Client:
+class TPClient:
     def __init__(self, host: str, port: int, callback_class: Type[ResponseCallback]):
         self.__client__: Optional[socket.socket] = socket.create_connection((host, port))
         self.__callback_class__: Type[ResponseCallback] = callback_class
         self.frame_reader: FrameReader = FrameReader()
 
     def __listen__(self):
-        """Reads incoming client messages and files. """
+        """ Reads incoming client messages and files. """
 
         callback = self.__callback_class__()
         callback.client = self.__client__

@@ -95,7 +95,7 @@ class ClientCallback(protocol.ResponseCallback):
         # builder.add_file('file.txt', open('file.txt', 'rb').read())
         client.send(builder.bytes())
 
-    def receive(self, files, message):
+    def received(self, files, message):
         for file in files:
             print(f'Filename: {file.name}')
             # Other attributes: file.size, file.data
