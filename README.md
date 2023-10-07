@@ -82,7 +82,7 @@ To send data from client, you need to build compatible bytes array with `BytesBu
 
 ```python
 
-from tej_protoc import TPClient, protocol
+from tej_protoc.client import TPClient, protocol
 
 
 class ClientCallback(protocol.ResponseCallback):
