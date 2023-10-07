@@ -1,7 +1,7 @@
 import socket
 
-from src.tej_protoc.client import TPClient
-from src.tej_protoc import protocol
+from tej_protoc.client import TPClient
+from tej_protoc import protocol
 
 
 class ClientCallback(protocol.ResponseCallback):

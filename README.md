@@ -48,8 +48,7 @@ Here is a simple server implementation with tej-protoc.
 Create a new file named `server.py`
 
 ```python
-from tej_protoc.server import TPServer
-from tej_protoc import protocol
+from tej_protoc.server import TPServer, protocol
 
 
 class MessageCallback(protocol.ResponseCallback):
@@ -83,8 +82,7 @@ To send data from client, you need to build compatible bytes array with `BytesBu
 
 ```python
 
-from tej_protoc.client import TPClient
-from tej_protoc import protocol
+from tej_protoc import TPClient, protocol
 
 
 class ClientCallback(protocol.ResponseCallback):
