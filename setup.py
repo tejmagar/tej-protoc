@@ -1,3 +1,4 @@
+import setuptools
 from setuptools import setup
 
 with open("README.md", "r") as file:
@@ -11,7 +12,8 @@ setup(
     long_description_content_type="text/markdown",
     license="MIT",
     url="https://github.com/tejmagar/tej-protoc",
-    package_dir={'': 'src'},
+    # package_dir={'': 'src'},
+    packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

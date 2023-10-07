@@ -1,9 +1,9 @@
 import socket
 from typing import List
 
-from tej_protoc import protocol
-from tej_protoc.callbacks import ResponseCallback
-from tej_protoc.file import File
+from src.tej_protoc import protocol
+from src.tej_protoc.callbacks import ResponseCallback
+from src.tej_protoc.file import File
 
 from src.tej_protoc.server import TPServer
 
