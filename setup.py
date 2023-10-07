@@ -12,7 +12,7 @@ setup(
     long_description_content_type="text/markdown",
     license="MIT",
     url="https://github.com/tejmagar/tej-protoc",
-    package_dir={'': 'tej_protoc'},
+    package_dir={'tej_protoc': 'tej_protoc'},
     # packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
