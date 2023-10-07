@@ -1,13 +1,9 @@
-import os
 import socket
-import sys
 from typing import List
 
 from tej_protoc import protocol
 from tej_protoc.callbacks import ResponseCallback
 from tej_protoc.file import File
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.tej_protoc.server import TPServer
 

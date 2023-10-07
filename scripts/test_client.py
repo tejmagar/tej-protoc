@@ -1,8 +1,4 @@
-import os
 import socket
-import sys
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.tej_protoc.client import TPClient
 from src.tej_protoc import protocol

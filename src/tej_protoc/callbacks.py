@@ -7,7 +7,7 @@ from tej_protoc.file import File
 class ResponseCallback:
     client: socket.socket = None
     custom_status: int = 0
-    protocol_version: int = 0
+    protocol_version: int = 1
 
     def connected(self, client: socket.socket):
         """
