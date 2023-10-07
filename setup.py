@@ -13,7 +13,6 @@ setup(
     license="MIT",
     url="https://github.com/tejmagar/tej-protoc",
     package_dir={'tej_protoc': 'tej_protoc'},
-    # packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
