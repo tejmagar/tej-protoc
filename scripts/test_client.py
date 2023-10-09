@@ -10,6 +10,8 @@ class ClientCallback(protocol.ResponseCallback):
 
     def received(self, files, message):
         print('---- Received in client ----')
+        print('Custom status: ', self.custom_status)
+
         for file in files:
             print(file.name)
 

@@ -95,7 +95,6 @@ class FrameReader:
         """ Read all the files from socket client. """
 
         files_count = self.count_number_of_files(client)
-        print(files_count)
         files: List[File] = []
 
         for e in range(files_count):
@@ -124,7 +123,7 @@ def read(client: socket.socket, callback: ResponseCallback, frame_reader: FrameR
         raise ProtocolException()  # First bit must be 1 to be valid
 
     # For every read, update the status and protocol version
-    callback.status = custom_status
+    callback.custom_status = custom_status
     callback.protocol_version = frame_reader.read_protocol_version(client)
 
     # Read files and message received
@@ -258,3 +257,5 @@ class BytesBuilder:
         self.__add_message__(dataframe)
 
         return bytes(dataframe)  # Returns constructed bytes
+
+        print(files_count)

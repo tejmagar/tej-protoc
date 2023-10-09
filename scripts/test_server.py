@@ -11,7 +11,7 @@ from tej_protoc.server import TPServer
 class MessageCallback(ResponseCallback):
     def connected(self, client: socket.socket):
         print('Client connected')
-        builder = protocol.BytesBuilder()
+        builder = protocol.BytesBuilder(20)
         builder.add_file('a.txt', b'10' * 1000)
         builder.add_file('b.txt', b'10' * 1000)
         builder.set_message('Hey'.encode()).bytes()
