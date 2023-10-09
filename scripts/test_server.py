@@ -11,11 +11,14 @@ from tej_protoc.server import TPServer
 class MessageCallback(ResponseCallback):
     def connected(self, client: socket.socket):
         print('Client connected')
-        protocol.send(client, protocol.BytesBuilder().set_message('Hello'.encode()).bytes())
+        builder = protocol.BytesBuilder()
+        builder.add_file('a.txt', b'10' * 1000)
+        builder.add_file('b.txt', b'10' * 1000)
+        builder.set_message('Hey'.encode()).bytes()
+        protocol.send(client, builder.bytes())
 
     def received(self, files: List[File], message_data: bytes):
         print('Message:', message_data.decode())
-        self.client.send(protocol.BytesBuilder().set_message(message_data).bytes())
 
 
 print('Server is running...')

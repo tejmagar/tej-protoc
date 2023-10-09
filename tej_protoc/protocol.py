@@ -95,11 +95,12 @@ class FrameReader:
         """ Read all the files from socket client. """
 
         files_count = self.count_number_of_files(client)
+        print(files_count)
         files: List[File] = []
 
         for e in range(files_count):
             filename, file_data, file_size = self.read_file(client)
-            files.append(File(filename, file_data, file_size))
+            files.append(File(filename, file_data))
 
         return files
 
@@ -167,7 +168,7 @@ class BytesBuilder:
     def add_file(self, filename: str, data: bytes):
         """ Constructs file bytes with filename and data to the dataframe. """
 
-        self._files.append(File(filename, data, len(data)))
+        self._files.append(File(filename, data))
         return self
 
     def set_message(self, message: bytes):

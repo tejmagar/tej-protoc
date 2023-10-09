@@ -4,3 +4,7 @@ class File:
 
         self.name = name
         self.data = data
+
+    @property
+    def size(self):
+        return len(self.data)
