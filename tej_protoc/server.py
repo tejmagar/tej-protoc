@@ -3,29 +3,29 @@ from typing import Any, Type
 import socket
 import threading
 
-from . import protocol
 from .callbacks import ResponseCallback
 from .exceptions import ConnectionClosed
 from .logger import Log
-from .protocol import FrameReader
+from .protocol import TPFrame
 
 
 class TPServer:
     def __init__(self, host: str, port: int, callback_class: Type[ResponseCallback], timeout: int = None):
         self.__server__: socket.socket = socket.create_server((host, port), reuse_port=True)
         self.__callback_class__: Type[ResponseCallback] = callback_class
-        self.frame_reader: FrameReader = FrameReader(timeout)
+        self.tp_frame: TPFrame = TPFrame(timeout)
 
     def __handle_events__(self, client: socket.socket, address: tuple[str, int]) -> None:
         """ Handles individual client event. """
 
-        callback = self.__callback_class__()
+        callback: ResponseCallback = self.__callback_class__()
+        callback.set_tp_frame(self.tp_frame)
         callback.client = client
         callback.connected(client)
 
         while True:
             try:
-                self.frame_reader.read(client, callback)
+                self.tp_frame.read(client, callback)
             except ConnectionClosed as e:
                 if type(e) == ConnectionClosed:
                     Log.debug('TPServer', f'Connection closed {address[0]}:{address[1]}')

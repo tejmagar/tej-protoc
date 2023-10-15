@@ -6,19 +6,6 @@ from .exceptions import InvalidStatusCode, InvalidProtocolVersion, ConnectionClo
 from .file import File
 
 
-def send(client: socket.socket, data: bytes) -> None:
-    """ Use this function to automatically raise `ConnectionClosed` exception when client is disconnected. """
-
-    try:
-        sent_bytes = client.send(data)
-
-        if sent_bytes == 0:  # Connection broken
-            raise ConnectionClosed()
-
-    except Exception:
-        raise ConnectionClosed()
-
-
 class SocReader:
     def __init__(self, max_buffer_size: Optional[int] = None):
         self.max_buffer_size = max_buffer_size
@@ -53,7 +40,7 @@ class SocReader:
         return bytes(data)
 
 
-class FrameReader:
+class TPFrame:
     def __init__(self, timeout: Optional[int] = None, **kwargs: Any):
         self.timeout = timeout  # Raises ConnectionClosed if data not received in given period
 
@@ -141,6 +128,23 @@ class FrameReader:
 
         # Send read files and message to callback method
         callback.received(files, message)
+
+    def send(self, client: socket.socket, data: bytes) -> int:
+        """ Use this function to automatically raise `ConnectionClosed` exception when client is disconnected. """
+
+        client.settimeout(self.timeout)
+
+        try:
+            sent_bytes = client.send(data)
+
+            if sent_bytes == 0:  # Connection broken
+                raise ConnectionClosed()
+
+        except Exception:
+            raise ConnectionClosed()
+
+        client.settimeout(None)
+        return sent_bytes
 
 
 class BytesBuilder:

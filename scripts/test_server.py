@@ -15,12 +15,12 @@ class MessageCallback(ResponseCallback):
         builder.add_file('a.txt', b'10' * 1000)
         builder.add_file('b.txt', b'10' * 1000)
         builder.set_message('Hey'.encode()).bytes()
-        protocol.send(client, builder.bytes())
+        self.send(builder.bytes())
 
     def received(self, files: List[File], message_data: bytes):
         print('Message:', message_data.decode())
 
 
 print('Server is running...')
-server = TPServer('localhost', 8000, MessageCallback)
+server = TPServer('localhost', 8000, MessageCallback, timeout=5)
 server.listen(run_background=True)
