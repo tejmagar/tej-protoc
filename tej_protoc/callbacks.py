@@ -5,9 +5,12 @@ from tej_protoc.file import File
 
 
 class ResponseCallback:
+    """ To use this class, you must extend available methods according to requirement. """
+
     client: socket.socket = None
     custom_status: int = 0
     protocol_version: int = 1
+
     __tf_frame__ = None
 
     def connected(self, client: socket.socket):
