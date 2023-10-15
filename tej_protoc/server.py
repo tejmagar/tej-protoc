@@ -11,10 +11,10 @@ from .protocol import FrameReader
 
 
 class TPServer:
-    def __init__(self, host: str, port: int, callback_class: Type[ResponseCallback]):
+    def __init__(self, host: str, port: int, callback_class: Type[ResponseCallback], timeout: int = None):
         self.__server__: socket.socket = socket.create_server((host, port), reuse_port=True)
         self.__callback_class__: Type[ResponseCallback] = callback_class
-        self.frame_reader: FrameReader = FrameReader()
+        self.frame_reader: FrameReader = FrameReader(timeout)
 
     def __handle_events__(self, client: socket.socket, address: tuple[str, int]) -> None:
         """ Handles individual client event. """
@@ -25,7 +25,7 @@ class TPServer:
 
         while True:
             try:
-                protocol.read(client, callback, self.frame_reader)
+                self.frame_reader.read(client, callback)
             except ConnectionClosed as e:
                 if type(e) == ConnectionClosed:
                     Log.debug('TPServer', f'Connection closed {address[0]}:{address[1]}')

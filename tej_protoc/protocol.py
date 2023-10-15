@@ -20,7 +20,7 @@ def send(client: socket.socket, data: bytes) -> None:
 
 
 class SocReader:
-    def __init__(self, max_buffer_size: Optional[int]):
+    def __init__(self, max_buffer_size: Optional[int] = None):
         self.max_buffer_size = max_buffer_size
 
         if not max_buffer_size:
@@ -54,7 +54,10 @@ class SocReader:
 
 
 class FrameReader:
-    def __init__(self, **kwargs: Any):
+    def __init__(self, timeout: Optional[int] = None, **kwargs: Any):
+        self.timeout = timeout  # Raises ConnectionClosed if data not received in given period
+
+        # Kwargs for `FrameReader` class
         self.soc_reader = kwargs.get('soc_reader')
         self.max_buffer_size = kwargs.get('max_buffer_size')
 
@@ -113,26 +116,31 @@ class FrameReader:
 
         return self.soc_reader.read_bytes(client, message_length)
 
+    def read(self, client: socket.socket, callback: ResponseCallback) -> None:
+        """ Read dataframes and handle response with callback. """
 
-def read(client: socket.socket, callback: ResponseCallback, frame_reader: FrameReader) -> None:
-    """ Read dataframes and handle response with callback. """
+        status, custom_status = self.read_status(client)
+        if status != 1:
+            print('Invalid starting bit. Received: ', bin(status)[2:])
+            raise ProtocolException()  # First bit must be 1 to be valid
 
-    status, custom_status = frame_reader.read_status(client)
-    if status != 1:
-        print('Invalid starting bit. Received: ', bin(status)[2:])
-        raise ProtocolException()  # First bit must be 1 to be valid
+        if self.timeout:
+            # Once first data is received, listen incoming data with timeout to close bad network connection
+            client.settimeout(self.timeout)
 
-    # For every read, update the status and protocol version
-    callback.custom_status = custom_status
-    callback.protocol_version = frame_reader.read_protocol_version(client)
+        # For every read, update the status and protocol version
+        callback.custom_status = custom_status
+        callback.protocol_version = self.read_protocol_version(client)
 
-    # Read files and message received
-    files = frame_reader.read_files(client)
-    message = frame_reader.read_message(client)
+        # Read files and message received
+        files = self.read_files(client)
+        message = self.read_message(client)
 
-    # Send read files and message to callback method
-    callback.received(files, message)
-    del frame_reader
+        if self.timeout:
+            client.settimeout(None)  # Make connection to listen forever
+
+        # Send read files and message to callback method
+        callback.received(files, message)
 
 
 class BytesBuilder:
@@ -257,5 +265,3 @@ class BytesBuilder:
         self.__add_message__(dataframe)
 
         return bytes(dataframe)  # Returns constructed bytes
-
-        print(files_count)
