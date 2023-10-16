@@ -27,16 +27,16 @@ class TPServer:
         while True:
             try:
                 self.tp_frame_reader.read(client, callback)
-            except Exception as e:
-                if type(e) == ConnectionClosed:
+            except Exception as error:
+                # Do necessary cleanups
+                client.close()
+                callback.disconnected()
+
+                if type(error) == ConnectionClosed:
                     Log.debug('TPServer', f'Connection closed {address[0]}:{address[1]}')
 
                 else:
-                    Log.error('TPServer', e)
-                break
-
-        client.close()
-        callback.disconnected()
+                    raise error
 
     def __serve__(self) -> None:
         """ Accepts and serves clients. """
