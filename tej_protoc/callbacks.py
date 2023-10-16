@@ -11,7 +11,7 @@ class ResponseCallback:
     custom_status: int = 0
     protocol_version: int = 1
 
-    tf_frame = None
+    tp_frame = None
 
     def connected(self, client: socket.socket):
         """
@@ -42,4 +42,4 @@ class ResponseCallback:
         It uses the same `timeout` set during initialization.
         """
 
-        return self.tf_frame.send(self.client, data)
+        return self.tp_frame.send(self.client, data)
