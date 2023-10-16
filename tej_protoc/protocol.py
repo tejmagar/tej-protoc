@@ -1,3 +1,4 @@
+import threading
 from typing import Tuple, Optional, List, Any
 import socket
 
@@ -137,21 +138,26 @@ class TPFrameReader:
             callback.received(files, message)
 
 
+send_lock = threading.Lock()
+
+
 def send(client: socket.socket, data: bytes, timeout=None) -> int:
     """ Use this function to automatically raise `ConnectionClosed` exception when client is disconnected. """
 
-    client.settimeout(timeout)
+    with send_lock:
+        client.settimeout(timeout)
 
-    try:
-        sent_bytes = client.send(data)
+        try:
+            sent_bytes = client.send(data)
 
-        if sent_bytes == 0:  # Connection broken
+            if sent_bytes == 0:  # Connection broken
+                raise ConnectionClosed()
+
+        except Exception:
             raise ConnectionClosed()
 
-    except Exception:
-        raise ConnectionClosed()
+        client.settimeout(None)
 
-    client.settimeout(None)
     return sent_bytes
 
 
