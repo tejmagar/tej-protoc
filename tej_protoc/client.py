@@ -26,7 +26,7 @@ class TPClient:
         while True:
             try:
                 self.tp_frame_reader.read(self.__client__, callback)
-            except ConnectionClosed as e:
+            except Exception as e:
                 if type(e) == ConnectionClosed:
                     Log.debug('TPClient', f'Connection closed')
 
