@@ -11,7 +11,7 @@ class StatusCode:
     PING = 2
 
 
-class SocReader:
+class SockReader:
     def __init__(self, max_buffer_size: Optional[int] = None):
         self.max_buffer_size = max_buffer_size
 
@@ -45,6 +45,40 @@ class SocReader:
         return bytes(data)
 
 
+class SockWriter:
+    def __init__(self, max_buffer_size: Optional[int] = None):
+        self.max_buffer_size = max_buffer_size
+
+        if not max_buffer_size:
+            # Default maximum buffer size is 8 kb
+            self.max_buffer_size = 8 * 1024
+
+    def send_in_chunk(self, client: socket.socket, data: bytes) -> bytes:
+        """ Write bytes in chunk. """
+
+        # Create maximum bytearray of given size. Declaring size initially helps to reduce memory copying.
+        # Create a memory view on the data bytearray to prevent copying bytes
+        memory_view = memoryview(data)
+
+        total_bytes_sent: int = 0
+        size = len(data)
+        buffer_size: int = min(size, self.max_buffer_size)
+
+        while total_bytes_sent != size:
+            remaining_size = size - total_bytes_sent
+            max_send_bytes = min(remaining_size, buffer_size)
+            chunk = memory_view[total_bytes_sent:total_bytes_sent + max_send_bytes]
+            bytes_sent = client.send(chunk)
+
+            if bytes_sent == 0:  # Connection broken
+                raise ConnectionClosed()
+
+            # Assign the chunk to the appropriate slice in the memory view
+            total_bytes_sent += bytes_sent
+
+        return bytes(data)
+
+
 class TPFrameReader:
     def __init__(self, timeout: Optional[int] = None, **kwargs: Any):
         self.timeout = timeout  # Raises ConnectionClosed if data not received in given period
@@ -54,7 +88,7 @@ class TPFrameReader:
         self.max_buffer_size = kwargs.get('max_buffer_size')
 
         if not self.soc_reader:
-            self.soc_reader = SocReader(self.max_buffer_size)
+            self.soc_reader = SockReader(self.max_buffer_size)
 
     def read_status(self, client: socket.socket) -> Tuple[int, int]:
         """ Reads first byte from the dataframe. """
@@ -145,19 +179,25 @@ class TPFrameReader:
 
 send_lock = threading.Lock()
 
+soc_writer = SockWriter()
 
-def send(client: socket.socket, data: bytes, timeout=None) -> int:
+
+def send(client: socket.socket, data: bytes, timeout: Optional[int] = None) -> int:
     """ Use this function to automatically raise `ConnectionClosed` exception when client is disconnected. """
 
     try:
         with send_lock:
-            client.settimeout(timeout)
-            sent_bytes = client.send(data)
+            if timeout:
+                client.settimeout(timeout)
+                sent_bytes = soc_writer.send_in_chunk(client, data)  # Send in chunk to handle timeout
+            else:
+                sent_bytes = client.send(data)  # Send all data at once
 
             if sent_bytes == 0:  # Connection broken
                 raise ConnectionClosed()
 
-            client.settimeout(None)
+            if timeout:
+                client.settimeout(None)
 
     except Exception as e:
         raise ConnectionClosed()

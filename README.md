@@ -55,7 +55,7 @@ class MessageCallback(protocol.ResponseCallback):
     def connected(self, client):
         builder = protocol.BytesBuilder()
         builder.set_message(b'Hello')
-        client.send(builder.bytes())
+        client.send_in_chunk(builder.bytes())
 
     def received(self, files, message):
         print('---- Received in server ----')
@@ -91,7 +91,7 @@ class ClientCallback(protocol.ResponseCallback):
         builder.set_message(b'Sending from client')
         # To upload file
         # builder.add_file('file.txt', open('file.txt', 'rb').read())
-        client.send(builder.bytes())
+        client.send_in_chunk(builder.bytes())
 
     def received(self, files, message):
         for file in files:

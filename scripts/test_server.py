@@ -35,7 +35,11 @@ class MessageCallback(ResponseCallback):
         threading.Thread(target=ping, args=(self,)).start()
 
     def received(self, files: List[File], message_data: bytes):
-        print('Message:', message_data.decode())
+        if message_data:
+            print('Message:', message_data.decode())
+
+        if files:
+            print('Received file')
 
 
 print('Server is running...')
