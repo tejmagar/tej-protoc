@@ -6,6 +6,10 @@ from .exceptions import InvalidStatusCode, InvalidProtocolVersion, ConnectionClo
 from .file import File
 
 
+class StatusCode:
+    PING = 2
+
+
 class SocReader:
     def __init__(self, max_buffer_size: Optional[int] = None):
         self.max_buffer_size = max_buffer_size
@@ -127,7 +131,10 @@ class TPFrameReader:
             client.settimeout(None)  # Make connection to listen forever
 
         # Send read files and message to callback method
-        callback.received(files, message)
+        if custom_status == StatusCode.PING:
+            callback.ping(files, message)
+        else:
+            callback.received(files, message)
 
 
 def send(client: socket.socket, data: bytes, timeout=None) -> int:

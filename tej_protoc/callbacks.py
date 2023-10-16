@@ -22,6 +22,11 @@ class ResponseCallback:
 
         pass
 
+    def ping(self, files: List[File], message_data: bytes):
+        """ This method is called when `PING` status code 1 is received. """
+
+        pass
+
     def received(self, files: List[File], message_data: bytes):
         """
         This method will be called synchronously for the connected client. However, if it is server it will be

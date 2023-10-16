@@ -4,6 +4,7 @@ from typing import List
 from tej_protoc import protocol
 from tej_protoc.callbacks import ResponseCallback
 from tej_protoc.file import File
+from tej_protoc.protocol import StatusCode
 
 from tej_protoc.server import TPServer
 
@@ -16,6 +17,9 @@ class MessageCallback(ResponseCallback):
         builder.add_file('b.txt', b'10' * 1000)
         builder.set_message('Hey'.encode()).bytes()
         protocol.send(client, builder.bytes())
+
+        # PING
+        self.send(protocol.BytesBuilder(StatusCode.PING).bytes())
 
     def received(self, files: List[File], message_data: bytes):
         print('Message:', message_data.decode())
