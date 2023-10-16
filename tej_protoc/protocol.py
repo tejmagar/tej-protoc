@@ -142,14 +142,18 @@ send_lock = threading.Lock()
 def send(client: socket.socket, data: bytes, timeout=None) -> int:
     """ Use this function to automatically raise `ConnectionClosed` exception when client is disconnected. """
 
-    with send_lock:
-        client.settimeout(timeout)
-        sent_bytes = client.send(data)
+    try:
+        with send_lock:
+            client.settimeout(timeout)
+            sent_bytes = client.send(data)
 
-        if sent_bytes == 0:  # Connection broken
-            raise ConnectionClosed()
+            if sent_bytes == 0:  # Connection broken
+                raise ConnectionClosed()
 
-        client.settimeout(None)
+            client.settimeout(None)
+
+    except Exception as e:
+        raise ConnectionClosed()
 
     return sent_bytes
 
