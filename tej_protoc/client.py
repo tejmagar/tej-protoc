@@ -18,7 +18,7 @@ class TPClient:
         """ Reads incoming client messages and files. """
 
         callback = self.__callback_class__()
-        callback.set_tp_frame(self.tp_frame)
+        callback.tp_frame = self.tp_frame
         callback.client = self.__client__
         callback.connected(self.__client__)
 

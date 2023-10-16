@@ -11,7 +11,7 @@ class ResponseCallback:
     custom_status: int = 0
     protocol_version: int = 1
 
-    __tf_frame__ = None
+    tf_frame = None
 
     def connected(self, client: socket.socket):
         """
@@ -36,15 +36,10 @@ class ResponseCallback:
 
         pass
 
-    def set_tp_frame(self, instance):
-        """ Sets `TPFrame` instance to the callback """
-
-        self.__tf_frame__ = instance
-
     def send(self, data: bytes) -> int:
         """
         Use `self.send(builder.build)` method to send data.
         It uses the same `timeout` set during initialization.
         """
 
-        return self.__tf_frame__.send(self.client, data)
+        return self.tf_frame.send(self.client, data)
