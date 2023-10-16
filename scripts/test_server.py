@@ -13,7 +13,12 @@ from tej_protoc.server import TPServer
 
 def ping(self):
     while True:
-        self.send(protocol.BytesBuilder(StatusCode.PING).bytes())
+        try:
+            self.send(protocol.BytesBuilder(StatusCode.PING).bytes())
+        except Exception as e:
+            print(e)
+            break
+
         sleep(3)
 
 
@@ -34,5 +39,5 @@ class MessageCallback(ResponseCallback):
 
 
 print('Server is running...')
-server = TPServer('localhost', 8000, MessageCallback, timeout=3)
+server = TPServer('localhost', 8000, MessageCallback, timeout=5)
 server.listen(run_background=True)

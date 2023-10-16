@@ -144,14 +144,9 @@ def send(client: socket.socket, data: bytes, timeout=None) -> int:
 
     with send_lock:
         client.settimeout(timeout)
+        sent_bytes = client.send(data)
 
-        try:
-            sent_bytes = client.send(data)
-
-            if sent_bytes == 0:  # Connection broken
-                raise ConnectionClosed()
-
-        except Exception:
+        if sent_bytes == 0:  # Connection broken
             raise ConnectionClosed()
 
         client.settimeout(None)

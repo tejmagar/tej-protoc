@@ -27,7 +27,7 @@ class TPServer:
         while True:
             try:
                 self.tp_frame_reader.read(client, callback)
-            except ConnectionClosed as e:
+            except Exception as e:
                 if type(e) == ConnectionClosed:
                     Log.debug('TPServer', f'Connection closed {address[0]}:{address[1]}')
 
