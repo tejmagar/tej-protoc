@@ -111,29 +111,36 @@ class TPFrameReader:
     def read(self, client: socket.socket, callback: 'callbacks.ResponseCallback') -> None:
         """ Read dataframes and handle response with callback. """
 
-        client.settimeout(None)
-        status, custom_status = self.read_status(client)
-        if status != 1:
-            print('Invalid starting bit. Received: ', bin(status)[2:])
-            raise ProtocolException()  # First bit must be 1 to be valid
+        try:
+            client.settimeout(None)
+            status, custom_status = self.read_status(client)
+            if status != 1:
+                print('Invalid starting bit. Received: ', bin(status)[2:])
+                raise ProtocolException()  # First bit must be 1 to be valid
 
-        if self.timeout:
-            # Once first data is received, listen incoming data with timeout to close bad network connection
-            client.settimeout(self.timeout)
+            if self.timeout:
+                # Once first data is received, listen incoming data with timeout to close bad network connection
+                client.settimeout(self.timeout)
 
-        # For every read, update the status and protocol version
-        callback.custom_status = custom_status
-        callback.protocol_version = self.read_protocol_version(client)
+            # For every read, update the status and protocol version
+            callback.custom_status = custom_status
+            callback.protocol_version = self.read_protocol_version(client)
 
-        # Read files and message received
-        files = self.read_files(client)
-        message = self.read_message(client)
+            # Read files and message received
+            files = self.read_files(client)
+            message = self.read_message(client)
 
-        # Send read files and message to callback method
-        if custom_status == StatusCode.PING:
-            callback.ping(files, message)
-        else:
-            callback.received(files, message)
+            # Send read files and message to callback method
+            if custom_status == StatusCode.PING:
+                callback.ping(files, message)
+            else:
+                callback.received(files, message)
+
+        except Exception as error:
+            if type(error) == ConnectionClosed:
+                raise ConnectionClosed()
+
+            raise error
 
 
 send_lock = threading.Lock()
