@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Optional
 import socket
 
+from tej_protoc import protocol
 from tej_protoc.file import File
 
 
@@ -11,7 +12,7 @@ class ResponseCallback:
     custom_status: int = 0
     protocol_version: int = 1
 
-    tp_frame = None
+    socket_timeout: Optional[int] = None
 
     def connected(self, client: socket.socket):
         """
@@ -42,4 +43,4 @@ class ResponseCallback:
         It uses the same `timeout` set during initialization.
         """
 
-        return self.tp_frame.send(self.client, data)
+        return protocol.send(self.client, data, self.socket_timeout)

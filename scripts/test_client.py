@@ -1,10 +1,10 @@
 import socket
 
 from tej_protoc.client import TPClient
-from tej_protoc import protocol
+from tej_protoc import callbacks
 
 
-class ClientCallback(protocol.ResponseCallback):
+class ClientCallback(callbacks.ResponseCallback):
     def connected(self, client: socket.socket):
         print('Connected to server...')
 

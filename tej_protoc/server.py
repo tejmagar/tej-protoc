@@ -6,26 +6,27 @@ import threading
 from .callbacks import ResponseCallback
 from .exceptions import ConnectionClosed
 from .logger import Log
-from .protocol import TPFrame
+from .protocol import TPFrameReader
 
 
 class TPServer:
     def __init__(self, host: str, port: int, callback_class: Type[ResponseCallback], timeout: int = None):
         self.__server__: socket.socket = socket.create_server((host, port), reuse_port=True)
         self.__callback_class__: Type[ResponseCallback] = callback_class
-        self.tp_frame: TPFrame = TPFrame(timeout)
+        self.timeout = timeout
+        self.tp_frame_reader: TPFrameReader = TPFrameReader(timeout)
 
     def __handle_events__(self, client: socket.socket, address: tuple[str, int]) -> None:
         """ Handles individual client event. """
 
         callback: ResponseCallback = self.__callback_class__()
-        callback.set_tp_frame(self.tp_frame)
+        callback.socket_timeout = self.timeout
         callback.client = client
         callback.connected(client)
 
         while True:
             try:
-                self.tp_frame.read(client, callback)
+                self.tp_frame_reader.read(client, callback)
             except ConnectionClosed as e:
                 if type(e) == ConnectionClosed:
                     Log.debug('TPServer', f'Connection closed {address[0]}:{address[1]}')

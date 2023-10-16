@@ -1,7 +1,7 @@
 from typing import Tuple, Optional, List, Any
 import socket
 
-from .callbacks import ResponseCallback
+from . import callbacks
 from .exceptions import InvalidStatusCode, InvalidProtocolVersion, ConnectionClosed, ProtocolException
 from .file import File
 
@@ -40,7 +40,7 @@ class SocReader:
         return bytes(data)
 
 
-class TPFrame:
+class TPFrameReader:
     def __init__(self, timeout: Optional[int] = None, **kwargs: Any):
         self.timeout = timeout  # Raises ConnectionClosed if data not received in given period
 
@@ -103,7 +103,7 @@ class TPFrame:
 
         return self.soc_reader.read_bytes(client, message_length)
 
-    def read(self, client: socket.socket, callback: ResponseCallback) -> None:
+    def read(self, client: socket.socket, callback: 'callbacks.ResponseCallback') -> None:
         """ Read dataframes and handle response with callback. """
 
         status, custom_status = self.read_status(client)
@@ -129,22 +129,23 @@ class TPFrame:
         # Send read files and message to callback method
         callback.received(files, message)
 
-    def send(self, client: socket.socket, data: bytes) -> int:
-        """ Use this function to automatically raise `ConnectionClosed` exception when client is disconnected. """
 
-        client.settimeout(self.timeout)
+def send(client: socket.socket, data: bytes, timeout=None) -> int:
+    """ Use this function to automatically raise `ConnectionClosed` exception when client is disconnected. """
 
-        try:
-            sent_bytes = client.send(data)
+    client.settimeout(timeout)
 
-            if sent_bytes == 0:  # Connection broken
-                raise ConnectionClosed()
+    try:
+        sent_bytes = client.send(data)
 
-        except Exception:
+        if sent_bytes == 0:  # Connection broken
             raise ConnectionClosed()
 
-        client.settimeout(None)
-        return sent_bytes
+    except Exception:
+        raise ConnectionClosed()
+
+    client.settimeout(None)
+    return sent_bytes
 
 
 class BytesBuilder:
@@ -199,7 +200,7 @@ class BytesBuilder:
         dataframe.append(status_byte)
 
     def __add_protocol_version__(self, dataframe: bytearray) -> None:
-        """ Adds 8 bits protocol version to the dataframe. Protocol is a integer range"""
+        """ Adds 8 bits protocol version to the dataframe. Protocol is an integer range"""
 
         dataframe.append(self._protocol_version)
 

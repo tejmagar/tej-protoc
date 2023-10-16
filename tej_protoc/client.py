@@ -5,26 +5,27 @@ from typing import Type, Optional
 from .callbacks import ResponseCallback
 from .exceptions import ConnectionClosed
 from .logger import Log
-from .protocol import TPFrame
+from .protocol import TPFrameReader
 
 
 class TPClient:
     def __init__(self, host: str, port: int, callback_class: Type[ResponseCallback], timeout: int = None):
         self.__client__: Optional[socket.socket] = socket.create_connection((host, port))
         self.__callback_class__: Type[ResponseCallback] = callback_class
-        self.tp_frame: TPFrame = TPFrame(timeout)
+        self.timeout = timeout
+        self.tp_frame_reader: TPFrameReader = TPFrameReader(timeout)
 
     def __listen__(self):
         """ Reads incoming client messages and files. """
 
         callback = self.__callback_class__()
-        callback.tp_frame = self.tp_frame
+        callback.socket_timeout = self.timeout
         callback.client = self.__client__
         callback.connected(self.__client__)
 
         while True:
             try:
-                self.tp_frame.read(self.__client__, callback)
+                self.tp_frame_reader.read(self.__client__, callback)
             except ConnectionClosed as e:
                 if type(e) == ConnectionClosed:
                     Log.debug('TPClient', f'Connection closed')
