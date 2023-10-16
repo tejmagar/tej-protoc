@@ -26,7 +26,7 @@ class ClientCallback(callbacks.ResponseCallback):
 
 def test_client():
     try:
-        client = TPClient('localhost', 8000, ClientCallback, timeout=5)
+        client = TPClient('localhost', 8000, ClientCallback, timeout=3)
         client.listen()
     except Exception as e:
         print('error', e)

@@ -111,6 +111,7 @@ class TPFrameReader:
     def read(self, client: socket.socket, callback: 'callbacks.ResponseCallback') -> None:
         """ Read dataframes and handle response with callback. """
 
+        client.settimeout(None)
         status, custom_status = self.read_status(client)
         if status != 1:
             print('Invalid starting bit. Received: ', bin(status)[2:])
@@ -127,9 +128,6 @@ class TPFrameReader:
         # Read files and message received
         files = self.read_files(client)
         message = self.read_message(client)
-
-        if self.timeout:
-            client.settimeout(None)  # Make connection to listen forever
 
         # Send read files and message to callback method
         if custom_status == StatusCode.PING:
