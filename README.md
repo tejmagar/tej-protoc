@@ -48,14 +48,16 @@ Here is a simple server implementation with tej-protoc.
 Create a new file named `server.py`
 
 ```python
-from tej_protoc.server import TPServer, protocol
+from tej_protoc.server import TPServer
+from tej_protoc import protocol
+from tej_protoc import callbacks
 
 
-class MessageCallback(protocol.ResponseCallback):
+class MessageCallback(callbacks.ResponseCallback):
     def connected(self, client):
         builder = protocol.BytesBuilder()
         builder.set_message(b'Hello')
-        client.send_in_chunk(builder.bytes())
+        protocol.send(client, builder.bytes())
 
     def received(self, files, message):
         print('---- Received in server ----')
@@ -82,16 +84,18 @@ To send data from client, you need to build compatible bytes array with `BytesBu
 
 ```python
 
-from tej_protoc.client import TPClient, protocol
+from tej_protoc.client import TPClient
+from tej_protoc import protocol
+from tej_protoc import callbacks
 
 
-class ClientCallback(protocol.ResponseCallback):
+class ClientCallback(callbacks.ResponseCallback):
     def connected(self, client):
         builder = protocol.BytesBuilder()
         builder.set_message(b'Sending from client')
         # To upload file
         # builder.add_file('file.txt', open('file.txt', 'rb').read())
-        client.send_in_chunk(builder.bytes())
+        protocol.send(client, builder.bytes())
 
     def received(self, files, message):
         for file in files:
