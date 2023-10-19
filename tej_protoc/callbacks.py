@@ -35,6 +35,11 @@ class ResponseCallback:
 
         pass
 
+    def __chunk_read__(self):
+        """ Executed every time when buffer is read """
+
+        pass
+
     def disconnected(self):
         """
         If the connection is broken or raised `Exception`, this method will be called. Raise `ConnectionClosed`
