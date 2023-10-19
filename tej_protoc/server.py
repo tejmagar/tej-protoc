@@ -16,6 +16,9 @@ class TPServer:
         self.timeout = timeout
         self.tp_frame_reader: TPFrameReader = TPFrameReader(timeout)
 
+    def add_sock_opt(self, *args, **kwargs):
+        self.__server__.setsockopt(*args, **kwargs)
+
     def __handle_events__(self, client: socket.socket, address: tuple[str, int]) -> None:
         """ Handles individual client event. """
 

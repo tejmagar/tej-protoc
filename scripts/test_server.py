@@ -44,4 +44,8 @@ class MessageCallback(ResponseCallback):
 
 print('Server is running...')
 server = TPServer('localhost', 8000, MessageCallback, timeout=5)
+server.add_sock_opt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+server.add_sock_opt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 60)
+server.add_sock_opt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 1)
+server.add_sock_opt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 15)
 server.listen(run_background=True)
