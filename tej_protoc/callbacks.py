@@ -43,7 +43,8 @@ class ResponseCallback:
     def disconnected(self):
         """
         If the connection is broken or raised `Exception`, this method will be called. Raise `ConnectionClosed`
-        exception for notifying connection is closed to the log."""
+        exception for notifying connection is closed to the log. Just do self.client.close() to call automatically.
+        """
 
         pass
 
