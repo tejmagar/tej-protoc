@@ -5,10 +5,8 @@ import socket
 from . import callbacks
 from .exceptions import InvalidStatusCode, InvalidProtocolVersion, ConnectionClosed, ProtocolException
 from .file import File
-
-
-class StatusCode:
-    PING = 2
+from .logger import Log
+from .status import StatusCode
 
 
 class SockReader:
@@ -149,15 +147,12 @@ class TPFrameReader:
         """ Read dataframes and handle response with callback. """
 
         try:
-            client.settimeout(None)
+            client.settimeout(callback.socket_timeout)  # Use callback socket timeout
+
             status, custom_status = self.read_status(client, callback)
             if status != 1:
                 print('Invalid starting bit. Received: ', bin(status)[2:])
                 raise ProtocolException()  # First bit must be 1 to be valid
-
-            if self.timeout:
-                # Once first data is received, listen incoming data with timeout to close bad network connection
-                client.settimeout(self.timeout)
 
             # For every read, update the status and protocol version
             callback.custom_status = custom_status
@@ -169,12 +164,19 @@ class TPFrameReader:
 
             # Send read files and message to callback method
             if custom_status == StatusCode.PING:
-                callback.ping(files, message)
+                callback.ping_received(files, message)
             else:
                 callback.received(files, message)
 
-        except Exception as error:
-            if type(error) == ConnectionClosed:
+        except (socket.timeout, Exception) as error:
+            if isinstance(error, socket.timeout):
+                if callback.socket_timeout:
+                    Log.debug('TPFrameReader', f'Socket read timeout exceed. No data received '
+                                               f'with in {callback.socket_timeout} seconds.')
+
+                raise ConnectionClosed()
+
+            if isinstance(error, ConnectionClosed):
                 raise ConnectionClosed()
 
             raise error
@@ -202,7 +204,7 @@ def send(client: socket.socket, data: bytes, timeout: Optional[int] = None) -> i
             if timeout:
                 client.settimeout(None)
 
-    except Exception as e:
+    except (socket.error, ConnectionClosed):
         raise ConnectionClosed()
 
     return sent_bytes

@@ -1,4 +1,5 @@
 import socket
+import traceback
 import threading
 from typing import Type, Optional
 
@@ -27,16 +28,18 @@ class TPClient:
             try:
                 self.tp_frame_reader.read(self.__client__, callback)
             except Exception as e:
-                if type(e) == ConnectionClosed:
+                if isinstance(e, ConnectionClosed):
                     Log.debug('TPClient', f'Connection closed')
 
                 else:
-                    Log.error('TPClient', e)
+                    Log.error('TPClient', 'Error occurred')
+                    traceback.format_exc()
 
                 break  # Stop listening incoming files and messages
 
+        self.__client__.close()
         self.__client__ = None
-        callback.disconnected()
+        callback.__disconnected__()
 
     def listen(self, **kwargs):
         """

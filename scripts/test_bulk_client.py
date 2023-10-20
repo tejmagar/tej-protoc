@@ -11,7 +11,7 @@ class ClientCallback(callbacks.ResponseCallback):
         print('connected')
         data = protocol.BytesBuilder().add_file('file.txt', b'1' * 1024 * 1024).bytes()
         for e in range(10):
-            self.send(data)
+            protocol.send(self.client, data)
 
     def received(self, files: List[File], message_data: bytes):
         pass

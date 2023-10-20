@@ -1,7 +1,9 @@
+from time import sleep
 from typing import Any, Type
 
 import socket
 import threading
+from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED, FIRST_EXCEPTION
 
 from .callbacks import ResponseCallback
 from .exceptions import ConnectionClosed
@@ -19,9 +21,11 @@ class TPServer:
     def add_sock_opt(self, *args, **kwargs):
         self.__server__.setsockopt(*args, **kwargs)
 
+    def __event__(self, callback):
+        pass
+
     def __handle_events__(self, client: socket.socket, address: tuple[str, int]) -> None:
         """ Handles individual client event. """
-
         callback: ResponseCallback = self.__callback_class__()
         callback.socket_timeout = self.timeout
         callback.client = client
@@ -34,7 +38,7 @@ class TPServer:
             except (socket.error, Exception) as error:
                 # Do necessary cleanups
                 client.close()
-                callback.disconnected()
+                callback.__disconnected__()
 
                 if isinstance(error, ConnectionClosed) or isinstance(error, socket.error):
                     Log.debug('TPServer', f'Connection closed {address[0]}:{address[1]}')

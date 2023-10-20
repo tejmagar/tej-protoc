@@ -1,7 +1,6 @@
 from typing import List, Optional
 import socket
 
-from tej_protoc import protocol
 from tej_protoc.file import File
 
 
@@ -13,6 +12,7 @@ class ResponseCallback:
     protocol_version: int = 1
 
     socket_timeout: Optional[int] = None
+    __is_disconnected__: bool = False
 
     def connected(self, client: socket.socket):
         """
@@ -22,8 +22,13 @@ class ResponseCallback:
 
         pass
 
-    def ping(self, files: List[File], message_data: bytes):
-        """ This method is called when `PING` status code 1 is received. """
+    def ping_received(self, files: List[File], message_data: bytes):
+        """ Called everytime when ping is received """
+
+        pass
+
+    def __chunk_read__(self):
+        """ Executed every time when buffer is read """
 
         pass
 
@@ -35,11 +40,6 @@ class ResponseCallback:
 
         pass
 
-    def __chunk_read__(self):
-        """ Executed every time when buffer is read """
-
-        pass
-
     def disconnected(self):
         """
         If the connection is broken or raised `Exception`, this method will be called. Raise `ConnectionClosed`
@@ -47,10 +47,12 @@ class ResponseCallback:
 
         pass
 
-    def send(self, data: bytes) -> int:
+    def __disconnected__(self):
         """
-        Use `self.send(builder.build)` method to send data.
-        It uses the same `timeout` set during initialization.
+        Making sure only disconnected method is called once.
+        It is because it may be triggered by multiple threads.
         """
 
-        return protocol.send(self.client, data, self.socket_timeout)
+        if not self.__is_disconnected__:
+            self.__is_disconnected__ = True
+            self.disconnected()
