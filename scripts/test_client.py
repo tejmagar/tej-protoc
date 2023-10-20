@@ -9,8 +9,10 @@ from tej_protoc.ping import Ping
 
 class ClientCallback(callbacks.ResponseCallback):
     def connected(self, client: socket.socket):
+        self.socket_timeout = None
+
         print('Connected to server...')
-        ping = Ping(self.client, 3)
+        # ping = Ping(self.client, 3)
         # ping.start()
         protocol.send(self.client, protocol.BytesBuilder().add_file('s', b'1' * 1000 * 1000).bytes())
 

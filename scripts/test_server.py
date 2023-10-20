@@ -20,8 +20,8 @@ class MessageCallback(ResponseCallback):
         builder.add_file('b.txt', b'10' * 1000)
         builder.set_message('Hey'.encode()).bytes()
         protocol.send(client, builder.bytes())
-        ping = Ping(self.client, 4)
-        ping.start()
+        # ping = Ping(self.client, 4)
+        # ping.start()
 
     def received(self, files: List[File], message_data: bytes):
         if message_data:
