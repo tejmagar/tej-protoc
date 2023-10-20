@@ -12,7 +12,6 @@ class ResponseCallback:
     protocol_version: int = 1
 
     socket_timeout: Optional[int] = None
-    __is_disconnected__: bool = False
 
     def connected(self, client: socket.socket):
         """
@@ -47,13 +46,3 @@ class ResponseCallback:
         """
 
         pass
-
-    def __disconnected__(self):
-        """
-        Making sure only disconnected method is called once.
-        It is because it may be triggered by multiple threads.
-        """
-
-        if not self.__is_disconnected__:
-            self.__is_disconnected__ = True
-            self.disconnected()

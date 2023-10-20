@@ -38,7 +38,7 @@ class TPServer:
             except (socket.error, Exception) as error:
                 # Do necessary cleanups
                 client.close()
-                callback.__disconnected__()
+                callback.disconnected()
 
                 if isinstance(error, ConnectionClosed) or isinstance(error, socket.error):
                     Log.debug('TPServer', f'Connection closed {address[0]}:{address[1]}')

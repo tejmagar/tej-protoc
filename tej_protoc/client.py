@@ -39,7 +39,7 @@ class TPClient:
 
         self.__client__.close()
         self.__client__ = None
-        callback.__disconnected__()
+        callback.disconnected()
 
     def listen(self, **kwargs):
         """
