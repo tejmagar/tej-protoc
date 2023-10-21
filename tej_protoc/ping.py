@@ -16,6 +16,7 @@ class Ping:
         self.client = client
         self.ping_sleep: float = ping_sleep
         self.socket_timeout: int = 3
+        self.enable: bool = True
 
         self.__ping_bytes__ = protocol.BytesBuilder(StatusCode.PING).bytes()
 
@@ -26,7 +27,9 @@ class Ping:
 
         while True:
             try:
-                protocol.send(self.client, self.__ping_bytes__, self.socket_timeout)
+                if self.enable:
+                    protocol.send(self.client, self.__ping_bytes__, self.socket_timeout)
+
             except (socket.error, ConnectionClosed):
                 break  # Break loop if ping fails
 

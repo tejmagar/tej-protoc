@@ -6,7 +6,7 @@ with open("README.md", "r") as file:
 
 setup(
     name="tej-protoc",
-    version="0.2.2",
+    version="0.2.3",
     description="A TEJ Protocol implementation",
     long_description=long_description,
     long_description_content_type="text/markdown",
