@@ -24,22 +24,27 @@ class TPClient:
         callback.client = self.__client__
         callback.connected(self.__client__)
 
+        last_exception = None
+
         while True:
             try:
                 self.tp_frame_reader.read(self.__client__, callback)
-            except Exception as e:
-                if isinstance(e, ConnectionClosed):
+            except Exception as error:
+                if isinstance(error, ConnectionClosed):
                     Log.debug('TPClient', f'Connection closed')
 
                 else:
+                    last_exception = error
                     Log.error('TPClient', 'Error occurred')
-                    traceback.format_exc()
 
                 break  # Stop listening incoming files and messages
 
         self.__client__.close()
         self.__client__ = None
         callback.disconnected()
+
+        if last_exception:
+            raise last_exception
 
     def listen(self, **kwargs):
         """
