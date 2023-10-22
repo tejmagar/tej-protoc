@@ -1,3 +1,4 @@
+import select
 import socket
 import traceback
 import threading
@@ -28,7 +29,19 @@ class TPClient:
 
         while True:
             try:
-                self.tp_frame_reader.read(self.__client__, callback)
+                if callback.socket_timeout:
+                    readable, _, _ = select.select([self.__client__], [], [], callback.socket_timeout)
+
+                    if readable:
+                        self.tp_frame_reader.read(self.__client__, callback)
+                    else:
+                        Log.debug('TPClient',
+                                  f'Socket read timeout exceed {callback.socket_timeout} seconds.')
+                        self.__client__.close()
+                        raise ConnectionClosed()
+                else:
+                    self.tp_frame_reader.read(self.__client__, callback)
+
             except Exception as error:
                 if isinstance(error, ConnectionClosed):
                     Log.debug('TPClient', f'Connection closed')

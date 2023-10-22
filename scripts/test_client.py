@@ -1,4 +1,5 @@
 import socket
+from time import sleep
 from typing import List
 
 from tej_protoc.client import TPClient
@@ -10,11 +11,15 @@ from tej_protoc.ping import Ping
 class ClientCallback(callbacks.ResponseCallback):
     def connected(self, client: socket.socket):
         self.socket_timeout = None
-
-        print('Connected to server...')
-        # ping = Ping(self.client, 3)
-        # ping.start()
         protocol.send(self.client, protocol.BytesBuilder().add_file('s', b'1' * 1000 * 1000).bytes())
+        print('Connected to server...')
+        ping = Ping(self.client, 1)
+        ping.start()
+
+        for e in range(100):
+            data = protocol.BytesBuilder().set_message(str(e).encode()).bytes()
+            protocol.send(client, data)
+            sleep(1)
 
     def ping_received(self, files: List[File], message_data: bytes):
         print('Ping received from server')

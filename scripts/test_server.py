@@ -20,9 +20,10 @@ class MessageCallback(ResponseCallback):
         builder.add_file('b.txt', b'10' * 1000)
         builder.set_message('Hey'.encode()).bytes()
         protocol.send(client, builder.bytes())
-        self.socket_timeout = 1
-        # ping = Ping(self.client, 4)
+        self.socket_timeout = 2
+        # ping = Ping(self.client, 0.5)
         # ping.start()
+        # self.socket_timeout = 3
 
     def received(self, files: List[File], message_data: bytes):
         if message_data:

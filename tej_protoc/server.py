@@ -40,6 +40,8 @@ class TPServer:
                     if readable:
                         self.tp_frame_reader.read(client, callback)
                     else:
+                        Log.debug('TPServer',
+                                  f'Socket read timeout exceed {callback.socket_timeout} seconds.')
                         client.close()
                         raise ConnectionClosed()
                 else:
