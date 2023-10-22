@@ -1,3 +1,4 @@
+import select
 from time import sleep
 from typing import Any, Type
 
@@ -33,7 +34,16 @@ class TPServer:
 
         while True:
             try:
-                self.tp_frame_reader.read(client, callback)
+                if callback.socket_timeout:
+                    readable, _, _ = select.select([client], [], [], callback.socket_timeout)
+
+                    if readable:
+                        self.tp_frame_reader.read(client, callback)
+                    else:
+                        client.close()
+                        raise ConnectionClosed()
+                else:
+                    self.tp_frame_reader.read(client, callback)
 
             except (socket.error, Exception) as error:
                 # Do necessary cleanups

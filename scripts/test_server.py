@@ -20,6 +20,7 @@ class MessageCallback(ResponseCallback):
         builder.add_file('b.txt', b'10' * 1000)
         builder.set_message('Hey'.encode()).bytes()
         protocol.send(client, builder.bytes())
+        self.socket_timeout = 1
         # ping = Ping(self.client, 4)
         # ping.start()
 

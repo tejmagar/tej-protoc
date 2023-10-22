@@ -33,8 +33,8 @@ class SockReader:
             max_read = min(remaining_size, buffer_size)
             chunk = client.recv(max_read)
 
-            if callback:
-                callback.__chunk_read__()  # Called everytime when chunk of data is read
+            # if callback:
+            #     callback.__chunk_read__()  # Called everytime when chunk of data is read
 
             if not chunk:  # Connection broken
                 raise ConnectionClosed()
