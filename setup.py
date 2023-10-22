@@ -1,4 +1,3 @@
-import setuptools
 from setuptools import setup
 
 with open("README.md", "r") as file:
@@ -6,7 +5,7 @@ with open("README.md", "r") as file:
 
 setup(
     name="tej-protoc",
-    version="0.2.3",
+    version="0.2.4",
     description="A TEJ Protocol implementation",
     long_description=long_description,
     long_description_content_type="text/markdown",
