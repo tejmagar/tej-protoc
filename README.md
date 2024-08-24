@@ -3,6 +3,8 @@
 `tej-protoc` v1 is a implementation of custom TEJ protocol. It is a full duplex protocol.
 This protocol can be used for sending large files and messages faster.
 
+Also available in [rust](https://github.com/tejmagar/tej-protoc-rust/).
+
 ## Installation
 ```shell
 pip install tej-protoc
